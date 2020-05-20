@@ -1,0 +1,51 @@
+# ApiController
+GET     /ping                           controllers.ApiController.ping
+
+# LoginController
+# POST    /login                          controllers.LoginController.login
+# POST    /logout                         controllers.LoginController.logout
+
+# UserController
+GET     /users                          controllers.UserController.getUsers
+GET     /users/:id                      controllers.UserController.getUserById(id: Long)
+GET     /users/search/:username/id      controllers.UserController.getIdByUsername(username: String)
+GET     /users/search/:username         controllers.UserController.searchUserByUsername(username: String)
+
+GET     /users/:id/reservations         controllers.ReservationController.getReservationsForUser(id: Long)
+
+POST    /users                          controllers.UserController.createUser
+
+POST    /users/:id                      controllers.UserController.updateUser(id: Long)
+
+DELETE  /users/:id/delete               controllers.UserController.deleteUser(id: Long)
+
+# ReservationController
+GET     /reservations                   controllers.ReservationController.getReservations
+
+# GET     /reservations/:id/invoice       controllers.ReservationController.getInvoice(id: Long)
+
+
+# OfferController
+GET     /offers                         controllers.OfferController.getOffers
+GET     /offers/:id                     controllers.OfferController.getOfferById(id: Long)
+GET     /offers/search/:name            controllers.OfferController.searchOffersByName(name: String)
+
+GET     /offers/:id/reservations        controllers.ReservationController.getReservationsForOffer(id: Long)
+POST    /offers/:id/reservations        controllers.ReservationController.createReservationForOffer(id: Long)
+
+GET     /offers/:id/opinions            controllers.OpinionController.getOpinionsForOffer(id: Long)
+POST    /offers/:id/opinions            controllers.OpinionController.createOpinionForOffer(id: Long)
+
+POST    /offers                         controllers.OfferController.createOffer
+
+POST    /offers/:id                     controllers.OfferController.updateOffer(id: Long)
+
+DELETE  /offers/:id/delete              controllers.OfferController.deleteOffer(id: Long)
+
+# CategoryController
+# GET     /categories                     controllers.CategoryController.getCategories
+
+# POST    /categories                     controllers.CategoryController.createCategory
+
+# AccountTypeController
+# GET     /accountTypes                   controllers.AccountTypeController.getAccountTypes
