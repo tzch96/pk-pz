@@ -8,4 +8,8 @@ class ApiController @Inject()(cc: ControllerComponents) extends AbstractControll
   def ping = Action { implicit request =>
     Ok("pong")
   }
+
+  def docs = Action {
+    Redirect("/docs/swagger-ui/index.html?url=/assets/swagger.json")
+  }
 }

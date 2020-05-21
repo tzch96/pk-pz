@@ -3,7 +3,8 @@ organization := "pl.tzch96"
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin)
+swaggerDomainNameSpaces := Seq("models")
 
 scalaVersion := "2.13.2"
 
@@ -16,6 +17,7 @@ libraryDependencies ++= Seq(evolutions,
   "org.playframework.anorm" %% "anorm" % "2.6.4")
 libraryDependencies += "com.typesafe.play" %% "play-json" % "2.8.1"
 libraryDependencies += "com.github.t3hnar" %% "scala-bcrypt" % "4.1"
+libraryDependencies += "org.webjars" % "swagger-ui" % "3.9.3"
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "pl.tzch96.controllers._"
 
