@@ -20,4 +20,4 @@ CREATE USER admin WITH PASSWORD 'admin';
 CREATE DATABASE gymate WITH OWNER=admin;
 ```
 The database tables will be created automatically from Play Evolutions scripts when the project is ran.
-Type ```sbt run``` from the main directory (the one with ```build.sbt```) and go to [localhost:9000/docs](localhost:9000/docs) in your browser to see available commands.
+Type ```sbt run``` from the main directory (the one with ```build.sbt```) and go to [localhost:9000/docs](http://localhost:9000/docs) in your browser to see available commands.

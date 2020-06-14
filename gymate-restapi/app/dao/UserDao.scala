@@ -35,6 +35,19 @@ class UserDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
     }
   }
 
+  def getPasswordHash(id: Long): Option[String] = {
+    db.withConnection { conn =>
+      val stmt = conn.createStatement
+      val rs = stmt.executeQuery(s"SELECT password_hash FROM users WHERE user_id = $id")
+
+      if (rs.next()) {
+        Some(rs.getString("password_hash"))
+      } else {
+        None
+      }
+    }
+  }
+
   override def getIdByName(name: String): Option[Long] = {
     db.withConnection { conn =>
       val stmt = conn.createStatement

@@ -2,8 +2,10 @@
 GET     /ping                           controllers.ApiController.ping
 
 # LoginController
-# POST    /login                          controllers.LoginController.login
-# POST    /logout                         controllers.LoginController.logout
+POST    /login                          controllers.AuthController.login
+POST    /logout                         controllers.AuthController.logout
+
+GET     /currentUser                    controllers.AuthController.getCurrentUser
 
 # UserController
 GET     /users                          controllers.UserController.getUsers
