@@ -2,9 +2,7 @@
 GET     /ping                           controllers.ApiController.ping
 
 # LoginController
-+nocsrf
 POST    /login                          controllers.AuthController.login
-+nocsrf
 POST    /logout                         controllers.AuthController.logout
 
 GET     /currentUser                    controllers.AuthController.getCurrentUser

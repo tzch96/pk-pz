@@ -71,7 +71,7 @@ class UserController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc:
     if (response != "1") {
       BadRequest(Json.obj("response" -> s"$response"))
     } else {
-      Created(Json.obj("response" -> s"User created successfully"))
+      Created(Json.toJson(userDao.getByName((request.body \ "username").as[String])))
     }
   }
 

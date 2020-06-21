@@ -1,17 +1,26 @@
 package controllers
 
-import models.DatabaseExecutionContext
+import models.{DatabaseExecutionContext, User}
 import dao.UserDao
 
 import javax.inject.{Inject, Singleton}
 import play.api.db.Database
 import play.api.mvc.{AbstractController, ControllerComponents}
 import com.github.t3hnar.bcrypt._
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, Writes}
 
 @Singleton
 class AuthController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc: ControllerComponents) extends AbstractController(cc) {
   val userDao = new UserDao(db, dbec)
+
+  implicit val userWrites = new Writes[User] {
+    def writes(user: User) = Json.obj(
+      "id" -> user.id,
+      "username" -> user.username,
+      "email" -> user.email,
+      "accountType" -> user.accountType
+    )
+  }
 
   def login = Action(parse.json) { implicit request =>
     val username = (request.body \ "username").asOpt[String]
@@ -28,7 +37,7 @@ class AuthController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc:
       val userPasswordHash = userDao.getPasswordHash(userId.get)
 
       if ((request.body \ "password").as[String].isBcrypted(userPasswordHash.get)) {
-        Ok.withSession(request.session + ("connectedUser" -> userId.toString) +
+        Ok(Json.toJson(userDao.getByName(username.get))).withSession(request.session + ("connectedUser" -> userId.toString) +
           ("connectedUserType" -> userDao.getUserType(userId.get).getOrElse("undefined")))
       } else {
         Unauthorized
