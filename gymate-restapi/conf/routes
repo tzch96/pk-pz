@@ -2,10 +2,13 @@
 GET     /ping                           controllers.ApiController.ping
 
 # LoginController
++nocsrf
 POST    /login                          controllers.AuthController.login
++nocsrf
 POST    /logout                         controllers.AuthController.logout
 
 GET     /currentUser                    controllers.AuthController.getCurrentUser
+GET     /currentUser/type               controllers.AuthController.getCurrentUserType
 
 # UserController
 GET     /users                          controllers.UserController.getUsers
@@ -31,6 +34,7 @@ GET     /reservations                   controllers.ReservationController.getRes
 GET     /offers                         controllers.OfferController.getOffers
 GET     /offers/:id                     controllers.OfferController.getOfferById(id: Long)
 GET     /offers/search/:name            controllers.OfferController.searchOffersByName(name: String)
+GET     /offers/sports/:sport           controllers.OfferController.searchOffersBySport(sport: String)
 
 GET     /offers/:id/reservations        controllers.ReservationController.getReservationsForOffer(id: Long)
 POST    /offers/:id/reservations        controllers.ReservationController.createReservationForOffer(id: Long)

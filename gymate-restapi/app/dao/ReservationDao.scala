@@ -2,7 +2,7 @@ package dao
 
 import models.{DatabaseExecutionContext, Reservation}
 
-import java.util.Date
+import java.sql.Timestamp
 import org.postgresql.util.PSQLException
 import play.api.db.Database
 
@@ -16,7 +16,7 @@ class ReservationDao(db: Database, dbec: DatabaseExecutionContext) {
       val listBuffer = ListBuffer[Reservation]()
 
       while (rs.next()) {
-        listBuffer.append(Reservation(rs.getLong("reservation_id"), rs.getDate("event_date"), rs.getLong("user_id"), rs.getLong("offer_id")))
+        listBuffer.append(Reservation(rs.getLong("reservation_id"), rs.getTimestamp("event_date"), rs.getLong("user_id"), rs.getLong("offer_id")))
       }
 
       listBuffer.toList
@@ -30,7 +30,7 @@ class ReservationDao(db: Database, dbec: DatabaseExecutionContext) {
       val listBuffer = ListBuffer[Reservation]()
 
       while (rs.next()) {
-        listBuffer.append(Reservation(rs.getLong("reservation_id"), rs.getDate("event_date"), rs.getLong("user_id"), rs.getLong("offer_id")))
+        listBuffer.append(Reservation(rs.getLong("reservation_id"), rs.getTimestamp("event_date"), rs.getLong("user_id"), rs.getLong("offer_id")))
       }
 
       listBuffer.toList
@@ -44,7 +44,7 @@ class ReservationDao(db: Database, dbec: DatabaseExecutionContext) {
       val listBuffer = ListBuffer[Reservation]()
 
       while (rs.next()) {
-        listBuffer.append(Reservation(rs.getLong("reservation_id"), rs.getDate("event_date"), rs.getLong("user_id"), rs.getLong("offer_id")))
+        listBuffer.append(Reservation(rs.getLong("reservation_id"), rs.getTimestamp("event_date"), rs.getLong("user_id"), rs.getLong("offer_id")))
       }
 
       listBuffer.toList
@@ -53,7 +53,7 @@ class ReservationDao(db: Database, dbec: DatabaseExecutionContext) {
 
   // TODO pass currentUserId as default userId - after LoginController is done
   // TODO verify dates when creating a reservation - after dates are added to OfferDao
-  def createReservationForOffer(eventDate: Date, userId: Long, offerId: Long) = {
+  def createReservationForOffer(eventDate: Timestamp, userId: Long, offerId: Long) = {
     db.withConnection { conn =>
       val stmt = conn.createStatement
       val rs = try {

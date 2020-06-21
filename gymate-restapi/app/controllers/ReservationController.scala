@@ -3,7 +3,9 @@ package controllers
 import models.{DatabaseExecutionContext, Reservation}
 import dao.ReservationDao
 
-import java.util.Date
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.{AbstractController, ControllerComponents}
 import play.api.libs.json._
@@ -13,6 +15,15 @@ import play.api.db.Database
 @Singleton
 class ReservationController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc: ControllerComponents) extends AbstractController(cc) {
   val reservationDao = new ReservationDao(db, dbec)
+
+  implicit object TimestampFormat extends Format[Timestamp] {
+    val format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
+    def reads(json: JsValue) = {
+      val str = json.as[String]
+      JsSuccess(new Timestamp(format.parse(str).getTime))
+    }
+    def writes(ts: Timestamp) = JsString(format.format(ts))
+  }
 
   implicit val reservationWrites = new Writes[Reservation] {
     def writes(reservation: Reservation) = Json.obj(
@@ -25,7 +36,7 @@ class ReservationController @Inject()(db: Database, dbec: DatabaseExecutionConte
 
   implicit val reservationReads: Reads[Reservation] = (
     (__ \ "id").read[Long] and
-      (__ \ "event_date").read[Date] and
+      (__ \ "event_date").read[Timestamp] and
       (__ \ "user_id").read[Long] and
       (__ \ "offer_id").read[Long]
     )(Reservation.apply _)
@@ -54,7 +65,7 @@ class ReservationController @Inject()(db: Database, dbec: DatabaseExecutionConte
 
   def createReservationForOffer(id: Long) = Action(parse.json) { implicit request =>
     val response = reservationDao.createReservationForOffer(
-      (request.body \ "event_date").as[Date],
+      (request.body \ "event_date").as[Timestamp],
       (request.body \ "user_id").as[Long],
       (request.body \ "offer_id").as[Long])
 

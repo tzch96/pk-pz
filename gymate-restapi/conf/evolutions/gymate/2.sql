@@ -50,6 +50,6 @@ INSERT INTO offers(offer_id, name, description, single_price, is_first_free, dat
 -- !Downs
 COMMENT ON TABLE play_evolutions IS 'Down 2';
 
-DELETE FROM account_types WHERE account_type_id >= 1 AND account_type_id <= 5;
 DELETE FROM users WHERE user_id >= 1 OR user_id <= 4;
+DELETE FROM account_types WHERE account_type_id >= 1 AND account_type_id <= 5;
 DELETE FROM offers WHERE offer_id = 1;

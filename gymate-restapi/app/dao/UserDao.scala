@@ -61,6 +61,33 @@ class UserDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
     }
   }
 
+  def getIdByEmail(email: String): Option[Long] = {
+    db.withConnection { conn =>
+      val stmt = conn.createStatement
+      val rs = stmt.executeQuery(s"SELECT user_id FROM users WHERE email = '$email'")
+
+      if (rs.next()) {
+        Some(rs.getLong("user_id"))
+      } else {
+        None
+      }
+    }
+  }
+
+  def getUserType(userId: Long): Option[String] = {
+    db.withConnection { conn =>
+      val stmt = conn.createStatement
+      val rs = stmt.executeQuery(s"SELECT account_type FROM account_types at " +
+        s"WHERE at.account_type_id IN (SELECT account_type_id FROM users WHERE user_id = $userId)")
+
+      if (rs.next()) {
+        Some(rs.getString("account_type"))
+      } else {
+        None
+      }
+    }
+  }
+
   override def getByName(name: String): Option[User] = {
     db.withConnection { conn =>
       val stmt = conn.createStatement

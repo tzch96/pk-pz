@@ -9,7 +9,6 @@ import org.postgresql.util.PSQLException
 import scala.collection.mutable.ListBuffer
 
 class OfferDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
-  // TODO fix dates display and get rid of this ugly thing
   private def convertArray[T](array: java.sql.Array): scala.Array[T] = {
     array.getArray().asInstanceOf[scala.Array[T]]
   }
@@ -22,7 +21,8 @@ class OfferDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
 
       while (rs.next()) {
         listBuffer.append(Offer(rs.getLong("offer_id"), rs.getString("name"), Option(rs.getString("description")),
-          rs.getBigDecimal("single_price"), rs.getBoolean("is_first_free"), convertArray(rs.getArray("dates")), rs.getLong("provider_id")))
+          rs.getBigDecimal("single_price"), rs.getBoolean("is_first_free"), convertArray(rs.getArray("dates")) , rs.getLong("provider_id"),
+          rs.getBigDecimal("latitude"), rs.getBigDecimal("longitude"), rs.getLong("sport_id")))
       }
 
       listBuffer.toList
@@ -36,7 +36,8 @@ class OfferDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
 
       if (rs.next()) {
         Some(Offer(rs.getLong("offer_id"), rs.getString("name"), Option(rs.getString("description")),
-          rs.getBigDecimal("single_price"), rs.getBoolean("is_first_free"), convertArray(rs.getArray("dates")), rs.getLong("provider_id")))
+          rs.getBigDecimal("single_price"), rs.getBoolean("is_first_free"), convertArray(rs.getArray("dates")), rs.getLong("provider_id"),
+          rs.getBigDecimal("latitude"), rs.getBigDecimal("longitude"), rs.getLong("sport_id")))
       } else {
         None
       }
@@ -63,7 +64,8 @@ class OfferDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
 
       if (rs.next()) {
         Some(Offer(rs.getLong("offer_id"), rs.getString("name"), Option(rs.getString("description")),
-          rs.getBigDecimal("single_price"), rs.getBoolean("is_first_free"), convertArray(rs.getArray("dates")), rs.getLong("provider_id")))
+          rs.getBigDecimal("single_price"), rs.getBoolean("is_first_free"), convertArray(rs.getArray("dates")), rs.getLong("provider_id"),
+          rs.getBigDecimal("latitude"), rs.getBigDecimal("longitude"), rs.getLong("sport_id")))
       } else {
         None
       }
@@ -78,14 +80,31 @@ class OfferDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
 
       while (rs.next()) {
         listBuffer.append(Offer(rs.getLong("offer_id"), rs.getString("name"), Option(rs.getString("description")),
-          rs.getBigDecimal("single_price"), rs.getBoolean("is_first_free"), convertArray(rs.getArray("dates")), rs.getLong("provider_id")))
+          rs.getBigDecimal("single_price"), rs.getBoolean("is_first_free"), convertArray(rs.getArray("dates")), rs.getLong("provider_id"),
+          rs.getBigDecimal("latitude"), rs.getBigDecimal("longitude"), rs.getLong("sport_id")))
       }
 
       listBuffer.toList
     }
   }
 
-  def create(name: String, description: Option[String], singlePrice: BigDecimal, isFirstFree: Boolean, providerId: Long): String = {
+  def getBySport(sport: String): List[Offer] = {
+    db.withConnection { conn =>
+      val stmt = conn.createStatement
+      val rs = stmt.executeQuery(s"SELECT * FROM offers o WHERE o.sport_id IN (SELECT sport_id FROM sports WHERE name = '$sport')")
+      val listBuffer = ListBuffer[Offer]()
+
+      while (rs.next()) {
+        listBuffer.append(Offer(rs.getLong("offer_id"), rs.getString("name"), Option(rs.getString("description")),
+          rs.getBigDecimal("single_price"), rs.getBoolean("is_first_free"), convertArray(rs.getArray("dates")), rs.getLong("provider_id"),
+          rs.getBigDecimal("latitude"), rs.getBigDecimal("longitude"), rs.getLong("sport_id")))
+      }
+
+      listBuffer.toList
+    }
+  }
+
+  def create(name: String, description: Option[String], singlePrice: BigDecimal, isFirstFree: Boolean, providerId: Long, latitude: BigDecimal, longitude: BigDecimal, sportId: Long): String = {
     db.withConnection { conn =>
       val stmt = conn.createStatement
       val descriptionInsert = description match {
@@ -93,13 +112,16 @@ class OfferDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
         case _ => s"'${description.get}'"
       }
       val rs = try {
-        stmt.executeUpdate(s"INSERT INTO offers(offer_id, name, description, single_price, is_first_free, provider_id) VALUES(" +
+        stmt.executeUpdate(s"INSERT INTO offers(offer_id, name, description, single_price, is_first_free, provider_id, latitude, longitude, sport_id) VALUES(" +
           s"(nextval('seq_offers')), " +
           s"'$name', " +
           s"$descriptionInsert, " +
           s"$singlePrice, " +
           s"$isFirstFree, " +
-          s"$providerId)")
+          s"$providerId, " +
+          s"$latitude, " +
+          s"$longitude, " +
+          s"$sportId)")
       } catch {
         case e: PSQLException => e.getServerErrorMessage
       }
@@ -108,7 +130,7 @@ class OfferDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
     }
   }
 
-  def update(id: Long, name: String, description: Option[String], singlePrice: BigDecimal, isFirstFree: Boolean, providerId: Long): String = {
+  def update(id: Long, name: String, description: Option[String], singlePrice: BigDecimal, isFirstFree: Boolean, providerId: Long, latitude: BigDecimal, longitude: BigDecimal, sportId: Long): String = {
     db.withConnection { conn =>
       val stmt = conn.createStatement
       val descriptionInsert = description match {
@@ -121,7 +143,10 @@ class OfferDao(db: Database, dbec: DatabaseExecutionContext) extends Dao {
           s"description = $descriptionInsert, " +
           s"single_price = $singlePrice, " +
           s"is_first_free = $isFirstFree, " +
-          s"provider_id = $providerId " +
+          s"provider_id = $providerId," +
+          s"latitude = $latitude, " +
+          s"longitude = $longitude," +
+          s"sport_id = $sportId " +
           s"WHERE offer_id = $id")
       } catch {
         case e: PSQLException => e.getServerErrorMessage

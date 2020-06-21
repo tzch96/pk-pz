@@ -15,4 +15,6 @@ trait Dao {
 //  def create(args: Any*): String
 //  def update(args: Any*): String
   def delete(id: Long): String
+
+  // TODO: make all implementations of update work by optional arguments (so we don't have to update the whole record)
 }

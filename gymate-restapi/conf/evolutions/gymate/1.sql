@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS offers(
     offer_id        INTEGER         PRIMARY KEY NOT NULL,
     name            VARCHAR(255)    NOT NULL,
     description     TEXT,
-    single_price    DECIMAL(6, 2)   NOT NULL,
+    single_price    DECIMAL(8, 2)   NOT NULL,
     is_first_free   BOOLEAN         DEFAULT FALSE,
     dates           TIMESTAMP [],
     provider_id     INTEGER         REFERENCES users(user_id)
@@ -80,9 +80,9 @@ CREATE TABLE IF NOT EXISTS invoices(
     invoice_id      INTEGER         PRIMARY KEY NOT NULL,
     invoice_number  VARCHAR(50)     NOT NULL,
     invoice_date    TIMESTAMP       NOT NULL,
-    tax_rate        DECIMAL(3, 2)   DEFAULT 000.00,
-    before_tax      DECIMAL(6, 2)   NOT NULL,
-    after_tax       DECIMAL(6, 2)   NOT NULL,
+    tax_rate        DECIMAL(5, 2)   DEFAULT 000.00,
+    before_tax      DECIMAL(8, 2)   NOT NULL,
+    after_tax       DECIMAL(8, 2)   NOT NULL,
     reservation_id  INTEGER         REFERENCES reservations(reservation_id)
 );
 

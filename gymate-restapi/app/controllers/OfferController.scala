@@ -3,7 +3,9 @@ package controllers
 import models.{DatabaseExecutionContext, Offer}
 import dao.OfferDao
 
-import java.util.Date
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.{AbstractController, ControllerComponents}
 import play.api.libs.json._
@@ -14,6 +16,15 @@ import play.api.db.Database
 class OfferController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc: ControllerComponents) extends AbstractController(cc) {
   val offerDao = new OfferDao(db, dbec)
 
+  implicit object TimestampFormat extends Format[Timestamp] {
+    val format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
+    def reads(json: JsValue) = {
+      val str = json.as[String]
+      JsSuccess(new Timestamp(format.parse(str).getTime))
+    }
+    def writes(ts: Timestamp) = JsString(format.format(ts))
+  }
+
   implicit val offerWrites = new Writes[Offer] {
     def writes(offer: Offer) = Json.obj(
       "id" -> offer.id,
@@ -22,7 +33,10 @@ class OfferController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc
       "singlePrice" -> offer.singlePrice,
       "isFirstFree" -> offer.isFirstFree,
       "dates" -> offer.dates,
-      "providerId" -> offer.providerId
+      "providerId" -> offer.providerId,
+      "latitude" -> offer.latitude,
+      "longitude" -> offer.longitude,
+      "sportId" -> offer.sportId
     )
   }
 
@@ -32,8 +46,11 @@ class OfferController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc
       (__ \ "description").readNullable[String] and
       (__ \ "singlePrice").read[BigDecimal] and
       (__ \ "isFirstFree").read[Boolean] and
-      (__ \ "dates").read[Array[Date]] and
-      (__ \ "providerId").read[Long]
+      (__ \ "dates").read[Array[Timestamp]] and
+      (__ \ "providerId").read[Long] and
+      (__ \ "latitude").read[BigDecimal] and
+      (__ \ "longitude").read[BigDecimal] and
+      (__ \ "sportId").read[Long]
   )(Offer.apply _)
 
   def getOffers = Action { implicit request =>
@@ -53,13 +70,20 @@ class OfferController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc
     Ok(Json.toJson(offerDao.getByNameMultiple(name)))
   }
 
+  def searchOffersBySport(sport: String) = Action { implicit request =>
+    Ok(Json.toJson(offerDao.getBySport(sport)))
+  }
+
   def createOffer = Action(parse.json) { implicit request =>
     val response = offerDao.create(
       (request.body \ "name").as[String],
       (request.body \ "description").asOpt[String],
       (request.body \ "singlePrice").as[BigDecimal],
       (request.body \ "isFirstFree").as[Boolean],
-      (request.body \ "providerId").as[Long])
+      (request.body \ "providerId").as[Long],
+      (request.body \ "latitude").as[BigDecimal],
+      (request.body \ "longitude").as[BigDecimal],
+      (request.body \ "sportId").as[Long])
 
     if (response != "1") {
       BadRequest(Json.obj("response" -> s"$response"))
@@ -74,7 +98,10 @@ class OfferController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc
       (request.body \ "description").asOpt[String],
       (request.body \ "singlePrice").as[BigDecimal],
       (request.body \ "isFirstFree").as[Boolean],
-      (request.body \ "providerId").as[Long])
+      (request.body \ "providerId").as[Long],
+      (request.body \ "latitude").as[BigDecimal],
+      (request.body \ "longitude").as[BigDecimal],
+      (request.body \ "sportId").as[Long])
 
     if (response != "1") {
       BadRequest(Json.obj("response" -> s"$response"))

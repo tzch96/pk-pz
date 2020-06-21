@@ -1,5 +1,5 @@
 package models
 
-import java.util.Date
+import java.sql.Timestamp
 
-case class Reservation(id: Long, eventDate: Date, userId: Long, offerId: Long) extends Model
+case class Reservation(id: Long, eventDate: Timestamp, userId: Long, offerId: Long) extends Model

@@ -1,5 +1,6 @@
 package models
 
-import java.util.Date
+import java.sql.Timestamp
 
-case class Offer(id: Long, name: String, description: Option[String], singlePrice: BigDecimal, isFirstFree: Boolean, dates: Array[Date], providerId: Long) extends Model
+case class Offer(id: Long, name: String, description: Option[String], singlePrice: BigDecimal, isFirstFree: Boolean,
+                 dates: Array[Timestamp], providerId: Long, latitude: BigDecimal, longitude: BigDecimal, sportId: Long) extends Model
