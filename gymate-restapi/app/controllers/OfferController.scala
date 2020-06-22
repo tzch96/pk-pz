@@ -36,7 +36,8 @@ class OfferController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc
       "providerId" -> offer.providerId,
       "latitude" -> offer.latitude,
       "longitude" -> offer.longitude,
-      "sportId" -> offer.sportId
+      "sportId" -> offer.sportId,
+      "spots" -> offer.spots
     )
   }
 
@@ -50,7 +51,8 @@ class OfferController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc
       (__ \ "providerId").read[Long] and
       (__ \ "latitude").read[BigDecimal] and
       (__ \ "longitude").read[BigDecimal] and
-      (__ \ "sportId").read[Long]
+      (__ \ "sportId").read[Long] and
+      (__ \ "spots").read[Int]
   )(Offer.apply _)
 
   def getOffers = Action { implicit request =>
@@ -83,7 +85,8 @@ class OfferController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc
       (request.body \ "providerId").as[Long],
       (request.body \ "latitude").as[BigDecimal],
       (request.body \ "longitude").as[BigDecimal],
-      (request.body \ "sportId").as[Long])
+      (request.body \ "sportId").as[Long],
+      (request.body \ "spots").as[Int])
 
     if (response != "1") {
       BadRequest(Json.obj("response" -> s"$response"))
@@ -101,7 +104,8 @@ class OfferController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc
       (request.body \ "providerId").as[Long],
       (request.body \ "latitude").as[BigDecimal],
       (request.body \ "longitude").as[BigDecimal],
-      (request.body \ "sportId").as[Long])
+      (request.body \ "sportId").as[Long],
+      (request.body \ "spots").as[Int])
 
     if (response != "1") {
       BadRequest(Json.obj("response" -> s"$response"))

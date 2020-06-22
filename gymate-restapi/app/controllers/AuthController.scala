@@ -3,15 +3,23 @@ package controllers
 import models.{DatabaseExecutionContext, User}
 import dao.UserDao
 
+import java.time.Clock
 import javax.inject.{Inject, Singleton}
 import play.api.db.Database
 import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.Configuration
 import com.github.t3hnar.bcrypt._
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json._
+import pdi.jwt.{JwtJson, JwtAlgorithm}
 
 @Singleton
-class AuthController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc: ControllerComponents) extends AbstractController(cc) {
+class AuthController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc: ControllerComponents, configuration: Configuration) extends AbstractController(cc) {
   val userDao = new UserDao(db, dbec)
+
+  val secret = configuration.underlying.getString("jwt.secret")
+  val algorithm = JwtAlgorithm.HS256
+
+  implicit val clock: Clock = Clock.systemUTC
 
   implicit val userWrites = new Writes[User] {
     def writes(user: User) = Json.obj(
@@ -20,6 +28,13 @@ class AuthController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc:
       "email" -> user.email,
       "accountType" -> user.accountType
     )
+  }
+
+  // TODO move this and UserController.userToken to something like Utils class
+  def userToken(user: Option[User], key: String, algorithm: JwtAlgorithm) = {
+    val claim = Json.toJson(user).as[JsObject]
+
+    JwtJson.encode(claim, key, algorithm)
   }
 
   def login = Action(parse.json) { implicit request =>
@@ -37,7 +52,7 @@ class AuthController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc:
       val userPasswordHash = userDao.getPasswordHash(userId.get)
 
       if ((request.body \ "password").as[String].isBcrypted(userPasswordHash.get)) {
-        Ok(Json.toJson(userDao.getByName(username.get))).withSession(request.session + ("connectedUser" -> userId.toString) +
+        Ok(userToken(userDao.getByName(username.get), secret, algorithm)).withSession(request.session + ("connectedUser" -> userId.toString) +
           ("connectedUserType" -> userDao.getUserType(userId.get).getOrElse("undefined")))
       } else {
         Unauthorized

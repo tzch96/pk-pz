@@ -2,17 +2,25 @@ package controllers
 
 import models.{DatabaseExecutionContext, User}
 import dao.UserDao
+import java.time.Clock
 
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.Configuration
 import play.api.db.Database
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import com.github.t3hnar.bcrypt._
+import pdi.jwt.{JwtJson, JwtAlgorithm}
 
 @Singleton
-class UserController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc: ControllerComponents) extends AbstractController(cc) {
+class UserController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc: ControllerComponents, configuration: Configuration) extends AbstractController(cc) {
   val userDao = new UserDao(db, dbec)
+
+  val secret = configuration.underlying.getString("jwt.secret")
+  val algorithm = JwtAlgorithm.HS256
+
+  implicit val clock: Clock = Clock.systemUTC
 
   implicit val userWrites = new Writes[User] {
     def writes(user: User) = Json.obj(
@@ -29,6 +37,13 @@ class UserController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc:
       (__ \ "email").readNullable[String] and
       (__ \ "accountType").read[Long]
     )(User.apply _)
+
+  // TODO move this and AuthController.userToken to something like Utils class
+  def userToken(user: Option[User], key: String, algorithm: JwtAlgorithm) = {
+    val claim = Json.toJson(user).as[JsObject]
+
+    JwtJson.encode(claim, key, algorithm)
+  }
 
   def getUsers = Action { implicit request =>
     Ok(Json.toJson(userDao.getAll))
@@ -71,7 +86,7 @@ class UserController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc:
     if (response != "1") {
       BadRequest(Json.obj("response" -> s"$response"))
     } else {
-      Created(Json.toJson(userDao.getByName((request.body \ "username").as[String])))
+      Created(userToken(userDao.getByName((request.body \ "username").as[String]), secret, algorithm))
     }
   }
 

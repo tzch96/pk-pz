@@ -1,7 +1,7 @@
 package controllers
 
 import models.{DatabaseExecutionContext, Reservation}
-import dao.ReservationDao
+import dao.{ReservationDao, OfferDao}
 
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
@@ -15,6 +15,7 @@ import play.api.db.Database
 @Singleton
 class ReservationController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc: ControllerComponents) extends AbstractController(cc) {
   val reservationDao = new ReservationDao(db, dbec)
+  val offerDao = new OfferDao(db, dbec)
 
   implicit object TimestampFormat extends Format[Timestamp] {
     val format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
@@ -64,15 +65,28 @@ class ReservationController @Inject()(db: Database, dbec: DatabaseExecutionConte
   }
 
   def createReservationForOffer(id: Long) = Action(parse.json) { implicit request =>
-    val response = reservationDao.createReservationForOffer(
-      (request.body \ "event_date").as[Timestamp],
-      (request.body \ "user_id").as[Long],
-      (request.body \ "offer_id").as[Long])
+    val eventDate = (request.body \ "event_date").as[Timestamp]
+    val userId = request.session.get("connectedUser").get.replaceAll("\\D", "").toInt
+    val offerId = (request.body \ "offer_id").as[Long]
 
-    if (response != "1") {
-      BadRequest(Json.obj("response" -> s"$response"))
+    if (offerDao.getSpots(offerId).get < 1) {
+      BadRequest(Json.obj("response" -> "No spots left for this offer"))
+    } else if (reservationDao.isUserAlreadyRegistered(eventDate, userId, offerId)) {
+      BadRequest(Json.obj("response" -> "User already has a reservation for this offer"))
     } else {
-      Created(Json.obj("response" -> s"Reservation created successfully"))
+      val response = reservationDao.createReservationForOffer(
+        eventDate,
+        userId,
+        offerId
+      )
+
+      if (response != "1") {
+        BadRequest(Json.obj("response" -> s"$response"))
+      } else {
+        offerDao.decrementSpots(offerId)
+
+        Created(Json.obj("response" -> s"Reservation created successfully"))
+      }
     }
   }
 }

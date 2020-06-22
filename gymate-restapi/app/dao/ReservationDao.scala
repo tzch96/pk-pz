@@ -51,8 +51,7 @@ class ReservationDao(db: Database, dbec: DatabaseExecutionContext) {
     }
   }
 
-  // TODO pass currentUserId as default userId - after LoginController is done
-  // TODO verify dates when creating a reservation - after dates are added to OfferDao
+  // TODO verify dates when creating a reservation
   def createReservationForOffer(eventDate: Timestamp, userId: Long, offerId: Long) = {
     db.withConnection { conn =>
       val stmt = conn.createStatement
@@ -67,6 +66,17 @@ class ReservationDao(db: Database, dbec: DatabaseExecutionContext) {
       }
 
       rs.toString
+    }
+  }
+
+  def isUserAlreadyRegistered(eventDate: Timestamp, userId: Long, offerId: Long): Boolean = {
+    db.withConnection { conn =>
+      val stmt = conn.createStatement
+
+      val rs = stmt.executeQuery(s"SELECT * FROM reservations WHERE event_date = '$eventDate' AND user_id = $userId AND offer_id = $offerId")
+
+      // TODO fix this: there is probably a better way to implement this
+      if (rs.next()) true else false
     }
   }
 }

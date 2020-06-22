@@ -18,3 +18,4 @@ libraryDependencies += "com.typesafe.play" %% "play-json" % "2.8.1"
 libraryDependencies += "com.github.t3hnar" %% "scala-bcrypt" % "4.1"
 libraryDependencies += "org.webjars" % "swagger-ui" % "3.9.3"
 libraryDependencies += filters
+libraryDependencies += "com.pauldijou" %% "jwt-play-json" % "4.2.0"
