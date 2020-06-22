@@ -86,7 +86,9 @@ class UserController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc:
     if (response != "1") {
       BadRequest(Json.obj("response" -> s"$response"))
     } else {
-      Created(userToken(userDao.getByName((request.body \ "username").as[String]), secret, algorithm))
+      val user = userDao.getByName((request.body \ "username").as[String])
+
+      Created(Json.toJson(user).as[JsObject] ++ Json.obj("jwt" -> userToken(user, secret, algorithm)))
     }
   }
 

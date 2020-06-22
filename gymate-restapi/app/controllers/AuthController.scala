@@ -52,7 +52,10 @@ class AuthController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc:
       val userPasswordHash = userDao.getPasswordHash(userId.get)
 
       if ((request.body \ "password").as[String].isBcrypted(userPasswordHash.get)) {
-        Ok(userToken(userDao.getByName(username.get), secret, algorithm)).withSession(request.session + ("connectedUser" -> userId.toString) +
+        val user = userDao.getByName(username.get)
+
+        Ok(Json.toJson(user).as[JsObject] ++ Json.obj("jwt" -> userToken(user, secret, algorithm))).
+          withSession(request.session + ("connectedUser" -> userId.toString) +
           ("connectedUserType" -> userDao.getUserType(userId.get).getOrElse("undefined")))
       } else {
         Unauthorized
