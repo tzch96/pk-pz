@@ -13,7 +13,7 @@ import play.api.db.Database
 class OpinionController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc: ControllerComponents) extends AbstractController(cc) {
   val opinionDao = new OpinionDao(db, dbec)
 
-  implicit val reservationWrites = new Writes[Opinion] {
+  implicit val opinionWrites = new Writes[Opinion] {
     def writes(opinion: Opinion) = Json.obj(
       "id" -> opinion.id,
       "rating" -> opinion.rating,
@@ -23,7 +23,7 @@ class OpinionController @Inject()(db: Database, dbec: DatabaseExecutionContext, 
     )
   }
 
-  implicit val reservationReads: Reads[Opinion] = (
+  implicit val opinionReads: Reads[Opinion] = (
     (__ \ "id").read[Long] and
       (__ \ "rating").read[Int] and
       (__ \ "contents").readNullable[String] and
@@ -31,7 +31,7 @@ class OpinionController @Inject()(db: Database, dbec: DatabaseExecutionContext, 
       (__ \ "offer_id").read[Long]
     )(Opinion.apply _)
 
-  def getReservations = Action { implicit request =>
+  def getOpinions = Action { implicit request =>
     Ok(Json.toJson(opinionDao.getAll))
   }
 

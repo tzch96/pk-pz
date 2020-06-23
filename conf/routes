@@ -54,6 +54,11 @@ DELETE  /offers/:id/delete              controllers.OfferController.deleteOffer(
 # AccountTypeController
 # GET     /accountTypes                   controllers.AccountTypeController.getAccountTypes
 
+# SportController
+GET     /sports                         controllers.SportController.getSports
+GET     /sports/:id                     controllers.SportController.getSportById(id: Long)
+GET     /sports/search/:name/id         controllers.SportController.getIdBySportName(name: String)
+
 # Swagger
 ### NoDocs ###
 GET     /docs/swagger-ui/*file          controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
