@@ -81,7 +81,7 @@ class UserController @Inject()(db: Database, dbec: DatabaseExecutionContext, cc:
       (request.body \ "username").as[String],
       (request.body \ "email").asOpt[String],
       (request.body \ "password").as[String].bcrypt,
-      (request.body \ "accountType").as[String])
+      (request.body \ "accountType").asOpt[String].getOrElse("user"))
 
     if (response != "1") {
       BadRequest(Json.obj("response" -> s"$response"))
