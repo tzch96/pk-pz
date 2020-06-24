@@ -48,8 +48,8 @@ class OpinionController @Inject()(db: Database, dbec: DatabaseExecutionContext, 
     val response = opinionDao.createOpinionForOffer(
       (request.body \ "rating").as[Int],
       (request.body \ "contents").asOpt[String],
-      (request.body \ "user_id").as[Long],
-      (request.body \ "offer_id").as[Long])
+      (request.body \ "userId").as[Long],
+      (request.body \ "offerId").as[Long])
 
     if (response != "1") {
       BadRequest(Json.obj("response" -> s"$response"))
