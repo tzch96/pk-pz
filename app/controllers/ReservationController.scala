@@ -68,11 +68,11 @@ class ReservationController @Inject()(db: Database, dbec: DatabaseExecutionConte
     val eventDate = (request.body \ "eventDate").as[Timestamp]
     val userId = (request.body \ "userId").asOpt[Long].getOrElse(
       request.session.get("connectedUser").get.replaceAll("\\D", "").toInt
-    )
+    ).asInstanceOf[Long]
 
     if (offerDao.getSpots(id).get < 1) {
       BadRequest(Json.obj("response" -> "No spots left for this offer"))
-    } else if (reservationDao.isUserAlreadyRegistered(eventDate, userId, id.asInstanceOf[Long])) {
+    } else if (reservationDao.isUserAlreadyRegistered(eventDate, userId, id)) {
       BadRequest(Json.obj("response" -> "User already has a reservation for this offer"))
     } else {
       val response = reservationDao.createReservationForOffer(
