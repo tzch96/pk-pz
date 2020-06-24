@@ -66,7 +66,9 @@ class ReservationController @Inject()(db: Database, dbec: DatabaseExecutionConte
 
   def createReservationForOffer(id: Long) = Action(parse.json) { implicit request =>
     val eventDate = (request.body \ "eventDate").as[Timestamp]
-    val userId = request.session.get("connectedUser").get.replaceAll("\\D", "").toInt
+    val userId = (request.body \ "userId").asOpt[Long].getOrElse(
+      request.session.get("connectedUser").get.replaceAll("\\D", "").toInt
+    )
     val offerId = (request.body \ "offerId").as[Long]
 
     if (offerDao.getSpots(offerId).get < 1) {
